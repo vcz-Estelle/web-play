@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  /* 다크 (기본) */
+  --background: #0b0b14;
+  --foreground: #e8e8f5;
+  --fog: #14121f;
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-border: rgba(255, 255, 255, 0.10);
+  --muted: rgba(232, 232, 245, 0.55);
+  --accent: #7c5cff;
+  --eunho: #ff4d4d;
+  --yejun: #4aa3ff;
+  --hamin: #cfcfe0;
+  --noa: #9b6bff;
+  --bambi: #ff8ec8;
+}
+
+:root[data-theme="light"] {
+  --background: #f4f3fb;
+  --foreground: #1a1828;
+  --fog: #e7e4f2;
+  --panel: rgba(0, 0, 0, 0.04);
+  --panel-border: rgba(0, 0, 0, 0.10);
+  --muted: rgba(26, 24, 40, 0.55);
+  --accent: #6a45e8;
+  /* 하민(🖤 검정)은 라이트 배경에서 보이도록 어둡게 */
+  --hamin: #2a2a3a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
