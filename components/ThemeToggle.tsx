@@ -8,6 +8,9 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const t = getStoredTheme();
+    // 서버/첫 클라이언트 렌더는 항상 'dark'로 일치시켜 하이드레이션 불일치를 피하고,
+    // 마운트 후 저장된 테마로 동기화한다(SSR에서 localStorage 접근 불가).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(t);
     applyTheme(t);
   }, []);

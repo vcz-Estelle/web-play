@@ -1,9 +1,29 @@
+'use client';
+import { useState } from 'react';
+import TitleScreen from '@/components/TitleScreen';
+import Game from '@/components/Game';
+import EndingScreen from '@/components/EndingScreen';
+import { unlockAudio } from '@/game/audio';
+
+type Screen = 'title' | 'game' | 'ending';
+
 export default function Home() {
+  const [screen, setScreen] = useState<Screen>('title');
   return (
-    <main className="flex flex-1 items-center justify-center p-6 text-center">
-      <div className="flex flex-col items-center gap-3">
-        <h1 className="text-3xl font-extrabold">여섯 번째 여름</h1>
-        <p className="text-sm text-white/50">The 6th Summer · 준비 중</p>
+    <main className="flex flex-1 items-center justify-center p-4">
+      <div
+        className="w-full max-w-2xl rounded-2xl p-6 flex items-center justify-center"
+        style={{ background: '#0b0b14', border: '1px solid rgba(255,255,255,0.08)' }}
+      >
+        {screen === 'title' && (
+          <TitleScreen onStart={() => { unlockAudio(); setScreen('game'); }} />
+        )}
+        {screen === 'game' && (
+          <Game onAllCleared={() => setScreen('ending')} />
+        )}
+        {screen === 'ending' && (
+          <EndingScreen onRestart={() => setScreen('title')} />
+        )}
       </div>
     </main>
   );
