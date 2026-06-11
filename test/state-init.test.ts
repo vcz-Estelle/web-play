@@ -3,7 +3,7 @@ import { initState } from '@/game/state';
 import { LevelDef } from '@/game/types';
 
 const level: LevelDef = {
-  id: 1, summer: 2, label: '2번째 여름', member: 'eunho', rewindEnabled: true,
+  id: 1, summer: 2, label: '2번째 여름', member: 'eunho', rewindEnabled: true, hintCap: 0,
   rows: ['#####', '#P.M#', '#..E#', '#####'],
   hazards: [{ id: 'h1', pos: { x: 2, y: 2 }, dir: 'left', kind: 'walker' }],
 };

@@ -3,11 +3,11 @@ import { initState, applyAction } from '@/game/state';
 import { LevelDef } from '@/game/types';
 
 const withMember: LevelDef = {
-  id: 1, summer: 2, label: 't', member: 'eunho', rewindEnabled: true,
+  id: 1, summer: 2, label: 't', member: 'eunho', rewindEnabled: true, hintCap: 0,
   rows: ['#####', '#PME#', '#####'], hazards: [],
 };
 const tutorial: LevelDef = {
-  id: 0, summer: 1, label: '1번째 여름', member: null, rewindEnabled: false,
+  id: 0, summer: 1, label: '1번째 여름', member: null, rewindEnabled: false, hintCap: 0,
   rows: ['#####', '#P.E#', '#####'], hazards: [],
 };
 

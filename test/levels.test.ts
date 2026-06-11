@@ -24,4 +24,8 @@ describe('LEVELS', () => {
       if (l.member) expect(s.member).not.toBeNull();
     });
   });
+
+  it('each level has the expected hintCap', () => {
+    expect(LEVELS.map((l) => l.hintCap)).toEqual([0, 8, 9, 13, 18, 22]);
+  });
 });

@@ -3,7 +3,7 @@ import { initState, applyAction } from '@/game/state';
 import { LevelDef } from '@/game/types';
 
 function lvl(rows: string[], hazards: LevelDef['hazards'] = []): LevelDef {
-  return { id: 1, summer: 2, label: 't', member: 'eunho', rewindEnabled: true, rows, hazards };
+  return { id: 1, summer: 2, label: 't', member: 'eunho', rewindEnabled: true, hintCap: 0, rows, hazards };
 }
 
 describe('move + STOP rule', () => {

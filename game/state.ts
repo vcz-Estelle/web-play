@@ -17,6 +17,8 @@ export function initState(level: LevelDef, memoryDeaths: Vec[]): GameState {
     collected: 0,
     tick: 0,
     status: 'playing',
+    hintsUsed: 0,
+    hintCap: level.hintCap,
     deaths: memoryDeaths.map((d) => ({ ...d })),
   };
 }
@@ -76,5 +78,6 @@ function dash(s: GameState, dir: Dir): GameState {
 
 export function applyAction(s: GameState, action: Action): GameState {
   if (action.type === 'move') return moveOnce(s, action.dir);
-  return dash(s, action.dir);
+  if (action.type === 'dash') return dash(s, action.dir);
+  return s; // 'hint': 이후 작업에서 구현
 }
