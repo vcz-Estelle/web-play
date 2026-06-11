@@ -1,6 +1,13 @@
 import { Dir, GameState } from './types';
 
-export interface RenderOpts { cell: number; memberColor: string | null; hintDir?: Dir | null; }
+// 힌트 색상: 한 칸 이동=노랑, 대쉬 이동=주황 (HUD 하단 안내 문구와 공유)
+export const HINT_COLORS = { move: '#ffe27a', dash: '#ff9f43' } as const;
+
+export interface RenderOpts {
+  cell: number;
+  memberColor: string | null;
+  hint?: { dir: Dir; type: 'move' | 'dash' } | null;
+}
 
 export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: RenderOpts) {
   const { cell } = opts;
@@ -70,18 +77,19 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
   // 플레이어(PLLI = 사랑/스타샤드 빛)
   glowDot(ctx, s.player.x * cell + cell / 2, s.player.y * cell + cell / 2, cell * 0.28, '#ffffff');
 
-  // 힌트 화살표(다음 1수)
-  if (opts.hintDir) {
+  // 힌트 화살표(다음 1수: 한 칸=노랑, 대쉬=주황)
+  if (opts.hint) {
     const arrow: Record<Dir, string> = { up: '↑', down: '↓', left: '←', right: '→' };
+    const color = HINT_COLORS[opts.hint.type];
     const px = s.player.x * cell + cell / 2;
     const py = s.player.y * cell + cell / 2;
     ctx.save();
-    ctx.shadowColor = '#ffe27a';
+    ctx.shadowColor = color;
     ctx.shadowBlur = 16;
-    ctx.fillStyle = '#ffe27a';
+    ctx.fillStyle = color;
     ctx.font = `bold ${cell * 0.5}px system-ui`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(arrow[opts.hintDir], px, py - cell * 0.5);
+    ctx.fillText(arrow[opts.hint.dir], px, py - cell * 0.5);
     ctx.restore();
   }
 }

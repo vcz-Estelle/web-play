@@ -11,7 +11,7 @@ export default function EndingScreen({ onRestart }: { onRestart: () => void }) {
   }, []);
   return (
     <div className='flex flex-col items-center gap-5 text-center'>
-      <h2 className='text-2xl font-extrabold'>여섯 번째 여름이 열렸다</h2>
+      <h2 className='text-2xl font-extrabold'>그토록 바랬던</h2>
       <div className='flex gap-2 text-3xl'>
         {RESCUE_ORDER.map((id) => (
           <span key={id} style={{ color: MEMBERS[id].color }}>
@@ -19,7 +19,7 @@ export default function EndingScreen({ onRestart }: { onRestart: () => void }) {
           </span>
         ))}
       </div>
-      <p className='text-white/70'>다섯 번의 여름을 되감아, 모두를 되찾았다.</p>
+      <p className='text-white/70'>어둠 속의 빛을 찾고 말았어</p>
       <a
         href={SIXTH_SUMMER_URL}
         target='_blank'
@@ -27,7 +27,7 @@ export default function EndingScreen({ onRestart }: { onRestart: () => void }) {
         className='px-6 py-3 rounded-xl font-bold text-white'
         style={{ background: 'var(--accent)' }}
       >
-        ▶ &apos;여섯 번째 여름&apos; 보러가기
+        🏵️ &apos;여섯 번째 여름&apos; 보러가기
       </a>
       <button onClick={onRestart} className='text-sm text-white/50 underline'>
         처음부터 다시
