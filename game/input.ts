@@ -5,9 +5,17 @@ const KEY_DIR: Record<string, Dir> = {
   w: 'up', s: 'down', a: 'left', d: 'right', W: 'up', S: 'down', A: 'left', D: 'right',
 };
 
-// 키보드: 방향키/WASD = move, Shift+방향 = dash
+// 물리 키 코드(e.code)는 한/영 IME와 무관 → 한글 모드에서도 작동
+const CODE_DIR: Record<string, Dir> = {
+  ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+  KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right',
+};
+
+// 키보드: 방향키/WASD = move, Shift+방향 = dash, h/H = hint
+// e.code(물리 키)를 우선 보고, 없으면 e.key로 폴백 → 한글 입력 모드에서도 동일하게 동작
 export function keyToAction(e: KeyboardEvent): Action | null {
-  const dir = KEY_DIR[e.key];
+  if (e.code === 'KeyH' || e.key === 'h' || e.key === 'H') return { type: 'hint' };
+  const dir = CODE_DIR[e.code] ?? KEY_DIR[e.key];
   if (!dir) return null;
   return { type: e.shiftKey ? 'dash' : 'move', dir };
 }

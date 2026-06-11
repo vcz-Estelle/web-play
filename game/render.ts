@@ -1,6 +1,6 @@
-import { GameState } from './types';
+import { Dir, GameState } from './types';
 
-export interface RenderOpts { cell: number; memberColor: string | null; }
+export interface RenderOpts { cell: number; memberColor: string | null; hintDir?: Dir | null; }
 
 export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: RenderOpts) {
   const { cell } = opts;
@@ -42,12 +42,12 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
     ctx.fillText('✕', d.x * cell + cell / 2, d.y * cell + cell / 2);
   }
 
-  // 스타샤드
+  // 스타샤드(음표)
   for (const sh of s.shards) {
     ctx.fillStyle = '#ffe27a';
     ctx.font = `${cell * 0.6}px system-ui`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('✦', sh.x * cell + cell / 2, sh.y * cell + cell / 2);
+    ctx.fillText('♪', sh.x * cell + cell / 2, sh.y * cell + cell / 2);
   }
 
   // 멤버(목표)
@@ -69,6 +69,21 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
 
   // 플레이어(PLLI = 사랑/스타샤드 빛)
   glowDot(ctx, s.player.x * cell + cell / 2, s.player.y * cell + cell / 2, cell * 0.28, '#ffffff');
+
+  // 힌트 화살표(다음 1수)
+  if (opts.hintDir) {
+    const arrow: Record<Dir, string> = { up: '↑', down: '↓', left: '←', right: '→' };
+    const px = s.player.x * cell + cell / 2;
+    const py = s.player.y * cell + cell / 2;
+    ctx.save();
+    ctx.shadowColor = '#ffe27a';
+    ctx.shadowBlur = 16;
+    ctx.fillStyle = '#ffe27a';
+    ctx.font = `bold ${cell * 0.5}px system-ui`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(arrow[opts.hintDir], px, py - cell * 0.5);
+    ctx.restore();
+  }
 }
 
 function glowDot(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) {

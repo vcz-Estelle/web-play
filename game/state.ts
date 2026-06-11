@@ -1,9 +1,21 @@
 import { Action, Dir, GameState, LevelDef, Vec } from './types';
 import { parseGrid, add, isBlocked, eq } from './grid';
 import { stepHazards } from './caligo';
+import { randInt, scatterShards } from './shards';
 
-export function initState(level: LevelDef, memoryDeaths: Vec[]): GameState {
+export interface InitOpts {
+  banked?: number;       // 이전 시도들에서 누적한 수집량
+  hintsUsed?: number;    // 누적 힌트 사용량
+  rng?: () => number;    // 테스트 결정성
+}
+
+export function initState(level: LevelDef, memoryDeaths: Vec[], opts: InitOpts = {}): GameState {
   const p = parseGrid(level.rows);
+  const collected = Math.min(opts.banked ?? 0, level.hintCap);
+  const remaining = level.hintCap - collected;
+  const scatterCount = remaining > 0 ? Math.min(randInt(1, 3, opts.rng), remaining) : 0;
+  const occupied: Vec[] = [p.player, p.exit, ...(p.member ? [p.member] : []), ...level.hazards.map((h) => h.pos)];
+  const shards = scatterShards(p.grid, occupied, scatterCount, opts.rng);
   return {
     levelId: level.id,
     grid: p.grid,
@@ -13,11 +25,11 @@ export function initState(level: LevelDef, memoryDeaths: Vec[]): GameState {
     memberId: level.member,
     rescued: false,
     hazards: level.hazards.map((h) => ({ ...h, pos: { ...h.pos } })),
-    shards: p.shards,
-    collected: 0,
+    shards,
+    collected,
     tick: 0,
     status: 'playing',
-    hintsUsed: 0,
+    hintsUsed: opts.hintsUsed ?? 0,
     hintCap: level.hintCap,
     deaths: memoryDeaths.map((d) => ({ ...d })),
   };
@@ -35,12 +47,12 @@ function resolveAfterEnter(s: GameState): GameState {
 
 function resolveAfterHazards(s: GameState): GameState {
   if (hazardAt(s, s.player)) return { ...s, status: 'dead' };
-  // 샤드 수집
+  // 샤드 수집(cap 상한 클램프)
   let collected = s.collected;
   let shards = s.shards;
   if (shards.some((sh) => eq(sh, s.player))) {
     shards = shards.filter((sh) => !eq(sh, s.player));
-    collected += 1;
+    collected = Math.min(s.hintCap, collected + 1);
   }
   // 구출
   let rescued = s.rescued;
@@ -77,7 +89,12 @@ function dash(s: GameState, dir: Dir): GameState {
 }
 
 export function applyAction(s: GameState, action: Action): GameState {
+  if (action.type === 'hint') {
+    if (s.status === 'playing' && s.collected > s.hintsUsed) {
+      return { ...s, hintsUsed: s.hintsUsed + 1 };
+    }
+    return s;
+  }
   if (action.type === 'move') return moveOnce(s, action.dir);
-  if (action.type === 'dash') return dash(s, action.dir);
-  return s; // 'hint': 이후 작업에서 구현
+  return dash(s, action.dir);
 }
