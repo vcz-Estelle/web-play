@@ -27,7 +27,7 @@ export default function EndingScreen({ onRestart }: { onRestart: () => void }) {
         className='px-6 py-3 rounded-xl font-bold text-white'
         style={{ background: 'var(--accent)' }}
       >
-        🏵️ &apos;여섯 번째 여름&apos; 보러가기
+        🏵️
       </a>
       <button onClick={onRestart} className='text-sm text-white/50 underline'>
         처음부터 다시

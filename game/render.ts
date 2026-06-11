@@ -1,7 +1,16 @@
-import { Dir, GameState } from './types';
+import { Dir, GameState, MemberId } from './types';
 
 // 힌트 색상: 한 칸 이동=노랑, 대쉬 이동=주황 (HUD 하단 안내 문구와 공유)
 export const HINT_COLORS = { move: '#ffe27a', dash: '#ff9f43' } as const;
+
+// 멤버 마커 이모티콘: 테두리(멤버 고유색) + 이모티콘으로 표시
+const MEMBER_EMOJI: Partial<Record<MemberId, string>> = {
+  eunho: '🥁',
+  yejun: '🎤',
+  hamin: '🎸',
+  noa: '🎹',
+  bambi: '🎸',
+};
 
 export interface RenderOpts {
   cell: number;
@@ -59,7 +68,26 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
 
   // 멤버(목표)
   if (s.member && !s.rescued && opts.memberColor) {
-    glowDot(ctx, s.member.x * cell + cell / 2, s.member.y * cell + cell / 2, cell * 0.32, opts.memberColor);
+    const mx = s.member.x * cell + cell / 2;
+    const my = s.member.y * cell + cell / 2;
+    const emoji = s.memberId ? MEMBER_EMOJI[s.memberId] : undefined;
+    if (emoji) {
+      // 멤버 색 테두리 + 이모티콘
+      ctx.save();
+      ctx.shadowColor = opts.memberColor;
+      ctx.shadowBlur = 14;
+      ctx.strokeStyle = opts.memberColor;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(mx, my, cell * 0.34, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      ctx.font = `${cell * 0.5}px system-ui`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, mx, my);
+    } else {
+      glowDot(ctx, mx, my, cell * 0.32, opts.memberColor);
+    }
   }
 
   // 칼리고

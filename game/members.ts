@@ -11,7 +11,7 @@ export interface MemberMeta {
 export const MEMBERS: Record<MemberId, MemberMeta> = {
   eunho: { id: 'eunho', name: '은호', color: '#ff4d4d', noteHz: 415.30, summer: 2 }, // 솔# G#4
   yejun: { id: 'yejun', name: '예준', color: '#4aa3ff', noteHz: 369.99, summer: 3 }, // 파# F#4
-  hamin: { id: 'hamin', name: '하민', color: '#cfcfe0', noteHz: 329.63, summer: 4 }, // 미 E4
+  hamin: { id: 'hamin', name: '하민', color: '#4ade80', noteHz: 329.63, summer: 4 }, // 미 E4
   noa:   { id: 'noa',   name: '노아', color: '#9b6bff', noteHz: 311.13, summer: 5 }, // 레# D#4
   bambi: { id: 'bambi', name: '밤비', color: '#ff8ec8', noteHz: 329.63, summer: 6 }, // 미 E4
 };
