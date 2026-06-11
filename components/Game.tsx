@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { LEVELS } from '@/game/levels';
 import { initState, applyAction } from '@/game/state';
-import { render } from '@/game/render';
+import { render, HINT_COLORS } from '@/game/render';
 import { keyToAction, swipeToAction } from '@/game/input';
 import { solveNextAction } from '@/game/hint';
 import { createProgress } from '@/game/progress';
@@ -12,6 +12,8 @@ import { GameState, MemberId, Dir } from '@/game/types';
 import HUD from './HUD';
 
 const CELL = 44;
+const FADE_OUT_MS = 4000;
+const FADE_IN_MS = 1500;
 
 export default function Game({ onAllCleared }: { onAllCleared: (members: MemberId[]) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,23 +24,24 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
   const [rescued, setRescued] = useState<MemberId[]>([]);
   const [muted, setMutedState] = useState(false);
   const bankRef = useRef<{ banked: number; hintsUsed: number }>({ banked: 0, hintsUsed: 0 });
-  const [hintDir, setHintDir] = useState<Dir | null>(null);
+  const [hintAction, setHintAction] = useState<{ dir: Dir; type: 'move' | 'dash' } | null>(null);
   const [hintsAvailable, setHintsAvailable] = useState(0);
   const [hintNudge, setHintNudge] = useState(0);
+  const [fading, setFading] = useState(false);
 
   const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
     const s = stateRef.current;
     const mColor = s.memberId ? MEMBERS[s.memberId].color : null;
-    render(ctx, s, { cell: CELL, memberColor: mColor, hintDir });
-  }, [hintDir]);
+    render(ctx, s, { cell: CELL, memberColor: mColor, hint: hintAction });
+  }, [hintAction]);
 
   const loadLevel = useCallback((idx: number) => {
     const deaths = LEVELS[idx].rewindEnabled ? prog.getDeaths(LEVELS[idx].id) : [];
     const next = initState(LEVELS[idx], deaths, { ...bankRef.current });
     stateRef.current = next;
-    setHintDir(null);
+    setHintAction(null);
     setHintsAvailable(next.collected - next.hintsUsed);
     setLevelIdx(idx);
   }, [prog]);
@@ -62,14 +65,16 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
 
   const handleDeath = useCallback(() => {
     const s = stateRef.current;
+    // 죽음 → 페이드 아웃 → 리셋 → 페이드 인 (fading 토글이 리렌더를 보장해 캔버스 재드로 누락 방지)
+    setFading(true);
     if (LEVELS[levelIdx].rewindEnabled) {
       prog.addDeath(LEVELS[levelIdx].id, s.player);
       bankRef.current = { banked: s.collected, hintsUsed: s.hintsUsed };
       playAlarm();
-      setTimeout(() => loadLevel(levelIdx), 650);
+      setTimeout(() => { loadLevel(levelIdx); setFading(false); }, FADE_OUT_MS);
     } else {
-      // 튜토리얼: 그냥 리셋(기억/알람 없음)
-      setTimeout(() => loadLevel(levelIdx), 300);
+      // 튜토리얼: 알람/기억 없이 페이드 후 리셋
+      setTimeout(() => { loadLevel(levelIdx); setFading(false); }, FADE_OUT_MS);
     }
   }, [levelIdx, loadLevel, prog]);
 
@@ -82,7 +87,7 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     const next = applyAction(s, { type: 'hint' });
     if (next === s) return; // 가용 힌트 없음
     stateRef.current = next;
-    setHintDir(solved.dir);
+    setHintAction({ dir: solved.dir, type: solved.type });
     setHintsAvailable(next.collected - next.hintsUsed);
     forceRender((n) => n + 1);
   }, []);
@@ -94,7 +99,7 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     if (s.status !== 'playing') return;
     const next = applyAction(s, action);
     stateRef.current = next;
-    setHintDir(null);
+    setHintAction(null);
     setHintsAvailable(next.collected - next.hintsUsed);
     forceRender((n) => n + 1);
     if (next.status === 'won') handleWin();
@@ -147,9 +152,12 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
         width={cols * CELL}
         height={rowsN * CELL}
         className="rounded-xl border border-white/10 touch-none max-w-full"
-        style={{ imageRendering: 'auto' }}
+        style={{ imageRendering: 'auto', opacity: fading ? 0 : 1, transition: `opacity ${fading ? FADE_OUT_MS : FADE_IN_MS}ms ease` }}
       />
-      <p className="text-xs text-white/50">PC: 방향키/WASD 이동 · Shift+방향 질주 · H 힌트 &nbsp;|&nbsp; 모바일: 스와이프(길게=질주)</p>
+      <p className="text-xs text-white/50">
+        PC: 방향키/WASD <span style={{ color: HINT_COLORS.move }}>이동</span> · Shift+방향 <span style={{ color: HINT_COLORS.dash }}>질주</span> · H 힌트
+        &nbsp;|&nbsp; 모바일: 스와이프(길게=<span style={{ color: HINT_COLORS.dash }}>질주</span>)
+      </p>
     </div>
   );
 }
