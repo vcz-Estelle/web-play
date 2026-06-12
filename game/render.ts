@@ -46,18 +46,6 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
     }
   }
 
-  // 기억 마커(과거 죽은 칸)
-  for (const d of s.deaths) {
-    ctx.fillStyle = 'rgba(150,150,170,0.35)';
-    ctx.beginPath();
-    ctx.arc(d.x * cell + cell / 2, d.y * cell + cell / 2, cell * 0.18, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(200,200,220,0.5)';
-    ctx.font = `${cell * 0.4}px system-ui`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('✕', d.x * cell + cell / 2, d.y * cell + cell / 2);
-  }
-
   // 스타샤드(음표)
   for (const sh of s.shards) {
     ctx.fillStyle = '#ffe27a';

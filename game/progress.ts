@@ -22,9 +22,6 @@ export function createProgress(storage: Storage) {
       set.add(id);
       storage.setItem(K.cleared, JSON.stringify([...set]));
     },
-    getDeaths(id: number): Vec[] {
-      return readJSON<Vec[]>(K.deaths(id), []);
-    },
     addDeath(id: number, pos: Vec): void {
       const list = readJSON<Vec[]>(K.deaths(id), []);
       list.push(pos);

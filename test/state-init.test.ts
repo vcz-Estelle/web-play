@@ -10,7 +10,7 @@ const level: LevelDef = {
 
 describe('initState', () => {
   it('builds playing state from level', () => {
-    const s = initState(level, []);
+    const s = initState(level);
     expect(s.status).toBe('playing');
     expect(s.player).toEqual({ x: 1, y: 1 });
     expect(s.member).toEqual({ x: 3, y: 1 });
@@ -19,9 +19,5 @@ describe('initState', () => {
     expect(s.rescued).toBe(false);
     expect(s.tick).toBe(0);
     expect(s.hazards.length).toBe(1);
-  });
-  it('seeds memory death markers', () => {
-    const s = initState(level, [{ x: 2, y: 1 }]);
-    expect(s.deaths).toEqual([{ x: 2, y: 1 }]);
   });
 });

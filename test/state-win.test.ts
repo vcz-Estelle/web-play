@@ -14,7 +14,7 @@ const tutorial: LevelDef = {
 describe('rescue & win', () => {
   it('reaching exit before rescue does NOT win', () => {
     // P(1,1) M(2,1) E(3,1): 오른쪽 두 번이면 M 거쳐 E 도달
-    let s = initState(withMember, []);
+    let s = initState(withMember);
     s = applyAction(s, { type: 'move', dir: 'right' }); // (2,1) = member → rescued
     expect(s.rescued).toBe(true);
     s = applyAction(s, { type: 'move', dir: 'right' }); // (3,1) = exit
@@ -22,7 +22,7 @@ describe('rescue & win', () => {
   });
 
   it('tutorial wins by reaching exit (no member)', () => {
-    let s = initState(tutorial, []);
+    let s = initState(tutorial);
     s = applyAction(s, { type: 'dash', dir: 'right' });
     expect(s.status).toBe('won');
   });

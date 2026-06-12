@@ -26,7 +26,7 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [prog] = useState(() => createProgress(window.localStorage));
   const [levelIdx, setLevelIdx] = useState(0);
-  const stateRef = useRef<GameState>(initState(LEVELS[0], []));
+  const stateRef = useRef<GameState>(initState(LEVELS[0]));
   const [, forceRender] = useState(0);
   const [rescued, setRescued] = useState<MemberId[]>([]);
   const [muted, setMutedState] = useState(false);
@@ -55,13 +55,12 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
   }, [levelIdx]);
 
   const loadLevel = useCallback((idx: number) => {
-    const deaths = LEVELS[idx].rewindEnabled ? prog.getDeaths(LEVELS[idx].id) : [];
-    const next = initState(LEVELS[idx], deaths, { ...bankRef.current });
+    const next = initState(LEVELS[idx], { ...bankRef.current });
     stateRef.current = next;
     setHintAction(null);
     setHintsAvailable(next.collected - next.hintsUsed);
     setLevelIdx(idx);
-  }, [prog]);
+  }, []);
 
   // 레벨/힌트 변경 및 매 입력(forceRender) 후 다시 그림
   useEffect(() => {

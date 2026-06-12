@@ -40,7 +40,6 @@ export interface GameState {
   status: GameStatus;
   hintsUsed: number; // 이번 스테이지에서 사용한 힌트 수(리와인드 넘어 누적)
   hintCap: number;   // 이 레벨에서 모을 수 있는 샤드 상한(= BFS 해답 길이) 캐시
-  deaths: Vec[]; // 이번 스테이지 기억 마커(과거 죽은 칸)
 }
 
 export type Action =

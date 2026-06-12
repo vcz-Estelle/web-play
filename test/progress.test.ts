@@ -23,13 +23,6 @@ describe('progress', () => {
     expect(p.isCleared(1)).toBe(true);
   });
 
-  it('accumulates death markers per level', () => {
-    p.addDeath(1, { x: 3, y: 2 });
-    p.addDeath(1, { x: 4, y: 2 });
-    expect(p.getDeaths(1)).toEqual([{ x: 3, y: 2 }, { x: 4, y: 2 }]);
-    expect(p.getDeaths(2)).toEqual([]);
-  });
-
   it('tracks best tick (lower is better)', () => {
     p.recordBest(1, 30);
     p.recordBest(1, 25);

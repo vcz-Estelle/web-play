@@ -9,7 +9,7 @@ export interface InitOpts {
   rng?: () => number;    // 테스트 결정성
 }
 
-export function initState(level: LevelDef, memoryDeaths: Vec[], opts: InitOpts = {}): GameState {
+export function initState(level: LevelDef, opts: InitOpts = {}): GameState {
   const p = parseGrid(level.rows);
   const collected = Math.min(opts.banked ?? 0, level.hintCap);
   const remaining = level.hintCap - collected;
@@ -31,7 +31,6 @@ export function initState(level: LevelDef, memoryDeaths: Vec[], opts: InitOpts =
     status: 'playing',
     hintsUsed: opts.hintsUsed ?? 0,
     hintCap: level.hintCap,
-    deaths: memoryDeaths.map((d) => ({ ...d })),
   };
 }
 

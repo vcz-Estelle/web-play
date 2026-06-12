@@ -18,7 +18,7 @@ describe('LEVELS', () => {
 
   it('every level parses with player, exit, and (rescue) member', () => {
     LEVELS.forEach((l) => {
-      const s = initState(l, []);
+      const s = initState(l);
       expect(s.player).toBeDefined();
       expect(s.exit).toBeDefined();
       if (l.member) expect(s.member).not.toBeNull();
