@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "여섯 번째 여름 — The 6th Summer",
-  description: "속도는 시간 통제력. PLLI가 되어 칼리고에 갇힌 PLAVE를 구출하라.",
+  title: "Rewind - *h3 *t* S*mM3*",
+  description: "",
 };
 
 export default function RootLayout({
