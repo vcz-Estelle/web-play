@@ -18,6 +18,21 @@ export interface RenderOpts {
   hint?: { dir: Dir; type: 'move' | 'dash' } | null;
 }
 
+const WALL_BASE = '#23203a';
+const WALL_TINT = 0.25; // 멤버 색 반영 비율
+
+// 벽 기본색에 멤버 고유색을 일부 섞어 레벨별로 다른 톤을 줌
+function mixHex(base: string, accent: string, t: number): string {
+  const b = parseInt(base.slice(1), 16);
+  const a = parseInt(accent.slice(1), 16);
+  const br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+  const ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+  const r = Math.round(br + (ar - br) * t);
+  const g = Math.round(bg + (ag - bg) * t);
+  const bl = Math.round(bb + (ab - bb) * t);
+  return `rgb(${r},${g},${bl})`;
+}
+
 export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: RenderOpts) {
   const { cell } = opts;
   const w = s.grid[0].length * cell;
@@ -29,16 +44,16 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
   ctx.fillRect(0, 0, w, h);
 
   // 격자/벽/출구
+  const wallFill = opts.memberColor ? mixHex(WALL_BASE, opts.memberColor, WALL_TINT) : WALL_BASE;
   for (let y = 0; y < s.grid.length; y++) {
     for (let x = 0; x < s.grid[y].length; x++) {
       const t = s.grid[y][x];
       if (t === 'wall') {
-        ctx.fillStyle = '#23203a';
+        ctx.fillStyle = wallFill;
         ctx.fillRect(x * cell, y * cell, cell, cell);
       } else if (t === 'exit') {
-        ctx.strokeStyle = '#7c5cff';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(x * cell + 4, y * cell + 4, cell - 8, cell - 8);
+        // 골 지점 = 빨려드는 구멍(웜홀): 시간선을 건너 멤버에게 닿는 '회귀'의 통로
+        drawWormhole(ctx, x * cell + cell / 2, y * cell + cell / 2, cell * 0.42, opts.memberColor ?? '#7c5cff');
       } else {
         ctx.fillStyle = 'rgba(255,255,255,0.03)';
         ctx.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
@@ -108,6 +123,30 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
     ctx.fillText(arrow[opts.hint.dir], px, py - cell * 0.5);
     ctx.restore();
   }
+}
+
+// 빨려드는 구멍(웜홀/사건의 지평선): 어두운 코어 → 멤버색 강착원반 링 → 바깥 글로우 falloff
+function drawWormhole(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, color: string) {
+  ctx.save();
+  // 코어로 빨려드는 방사형 그라데이션
+  const g = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r);
+  g.addColorStop(0, '#000000');
+  g.addColorStop(0.55, '#000000');
+  g.addColorStop(0.78, color);
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+  // 강착원반 링(멤버색 글로우)
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 12;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function glowDot(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) {
