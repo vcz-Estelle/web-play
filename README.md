@@ -100,7 +100,7 @@ sequenceDiagram
 
 ## 배포
 
-- Vercel: _(배포 후 URL 기입)_
+- Vercel URL 링크: **https://web-play-sigma.vercel.app/**
 
 ---
 
