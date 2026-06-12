@@ -11,9 +11,16 @@ import { unlockAudio, playAlarm, playRescue, setMuted } from '@/game/audio';
 import { GameState, MemberId, Dir } from '@/game/types';
 import HUD from './HUD';
 
-const CELL = 44;
+const MAX_CELL = 44;
+const MIN_CELL = 24;
 const FADE_OUT_MS = 4000;
 const FADE_IN_MS = 1500;
+
+// 화면 너비에 맞춰 셀 크기 산출(24~44px)
+function computeCell(cols: number): number {
+  const maxW = Math.min(window.innerWidth - 32, 640);
+  return Math.min(MAX_CELL, Math.max(MIN_CELL, Math.floor(maxW / cols)));
+}
 
 export default function Game({ onAllCleared }: { onAllCleared: (members: MemberId[]) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,14 +35,24 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
   const [hintsAvailable, setHintsAvailable] = useState(0);
   const [hintNudge, setHintNudge] = useState(0);
   const [fading, setFading] = useState(false);
+  const [cell, setCell] = useState(() => computeCell(LEVELS[0].rows[0].length));
 
   const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
     const s = stateRef.current;
     const mColor = s.memberId ? MEMBERS[s.memberId].color : null;
-    render(ctx, s, { cell: CELL, memberColor: mColor, hint: hintAction });
-  }, [hintAction]);
+    render(ctx, s, { cell, memberColor: mColor, hint: hintAction });
+  }, [hintAction, cell]);
+
+  // 레벨/화면 크기에 맞춰 셀 크기 재계산(모바일 대응)
+  useEffect(() => {
+    const cols = LEVELS[levelIdx].rows[0].length;
+    const fit = () => setCell(computeCell(cols));
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [levelIdx]);
 
   const loadLevel = useCallback((idx: number) => {
     const deaths = LEVELS[idx].rewindEnabled ? prog.getDeaths(LEVELS[idx].id) : [];
@@ -124,12 +141,12 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     const start = (e: TouchEvent) => { unlockAudio(); const t = e.touches[0]; sx = t.clientX; sy = t.clientY; };
     const end = (e: TouchEvent) => {
       const t = e.changedTouches[0];
-      doAction(swipeToAction(t.clientX - sx, t.clientY - sy, CELL));
+      doAction(swipeToAction(t.clientX - sx, t.clientY - sy, cell));
     };
     el.addEventListener('touchstart', start, { passive: true });
     el.addEventListener('touchend', end, { passive: true });
     return () => { el.removeEventListener('touchstart', start); el.removeEventListener('touchend', end); };
-  }, [doAction]);
+  }, [doAction, cell]);
 
   const cols = LEVELS[levelIdx].rows[0].length;
   const rowsN = LEVELS[levelIdx].rows.length;
@@ -149,8 +166,8 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
       />
       <canvas
         ref={canvasRef}
-        width={cols * CELL}
-        height={rowsN * CELL}
+        width={cols * cell}
+        height={rowsN * cell}
         className="rounded-xl border border-white/10 touch-none max-w-full"
         style={{ imageRendering: 'auto', opacity: fading ? 0 : 1, transition: `opacity ${fading ? FADE_OUT_MS : FADE_IN_MS}ms ease` }}
       />
