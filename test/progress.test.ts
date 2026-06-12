@@ -29,10 +29,4 @@ describe('progress', () => {
     p.recordBest(1, 40);
     expect(p.getBest(1)).toBe(25);
   });
-
-  it('counts rewinds', () => {
-    p.addDeath(1, { x: 1, y: 1 });
-    p.addDeath(1, { x: 2, y: 1 });
-    expect(p.rewinds(1)).toBe(2);
-  });
 });

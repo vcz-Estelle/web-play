@@ -61,27 +61,25 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
     ctx.fillText('♪', sh.x * cell + cell / 2, sh.y * cell + cell / 2);
   }
 
-  // 멤버(목표)
-  if (s.member && !s.rescued && opts.memberColor) {
+  // 멤버(목표) — 멤버색이 없으면(튜토리얼) 흰 원 테두리 마커
+  if (s.member && !s.rescued) {
     const mx = s.member.x * cell + cell / 2;
     const my = s.member.y * cell + cell / 2;
+    const color = opts.memberColor ?? '#ffffff';
     const emoji = s.memberId ? MEMBERS[s.memberId].animal : undefined;
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = emoji ? 14 : 12;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(mx, my, cell * (emoji ? 0.34 : 0.3), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
     if (emoji) {
-      // 멤버 색 테두리 + 이모티콘
-      ctx.save();
-      ctx.shadowColor = opts.memberColor;
-      ctx.shadowBlur = 14;
-      ctx.strokeStyle = opts.memberColor;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(mx, my, cell * 0.34, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
       ctx.font = `${cell * 0.5}px system-ui`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(emoji, mx, my);
-    } else {
-      glowDot(ctx, mx, my, cell * 0.32, opts.memberColor);
     }
   }
 

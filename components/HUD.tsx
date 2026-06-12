@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react';
 import { MEMBERS, RESCUE_ORDER } from '@/game/members';
 import { MemberId } from '@/game/types';
 
-export default function HUD({ summer, rescued, rewinds, muted, onToggleMute, hintsAvailable, onHint, hintNudge }: {
-  summer: number; rescued: MemberId[]; rewinds: number;
+export default function HUD({ rescued, rewinds, muted, onToggleMute, hintsAvailable, onHint, hintNudge }: {
+  rescued: MemberId[]; rewinds: number;
   muted: boolean; onToggleMute: () => void;
   hintsAvailable: number; onHint: () => void; hintNudge: number;
 }) {
@@ -27,7 +27,7 @@ export default function HUD({ summer, rescued, rewinds, muted, onToggleMute, hin
 
   return (
     <div className="w-full flex items-center justify-between gap-3 text-sm text-white/80">
-      <span className="font-bold">{summer}번째 여름</span>
+      {/* 클리어(구출) 표시 — 가장 왼쪽 */}
       <div className="flex gap-1.5">
         {RESCUE_ORDER.map((id) => {
           const done = rescued.includes(id);
@@ -40,20 +40,22 @@ export default function HUD({ summer, rescued, rewinds, muted, onToggleMute, hin
           );
         })}
       </div>
-      <span className="text-white/60">🔁 {rewinds}</span>
-      <button
-        ref={hintBtnRef}
-        onClick={onHint}
-        disabled={hintsAvailable === 0}
-        className="px-2 py-1 rounded bg-white/10 disabled:opacity-30"
-        style={{ color: '#ffe27a' }}
-        title="힌트: 다음 1수"
-      >
-        ♪ {hintsAvailable}
-      </button>
-      <button onClick={onToggleMute} className="px-2 py-1 rounded bg-white/10">
-        {muted ? '🔇' : '🔊'}
-      </button>
+      <div className="flex items-center gap-3">
+        <span className="text-white/60">🔁 {rewinds}</span>
+        <button
+          ref={hintBtnRef}
+          onClick={onHint}
+          disabled={hintsAvailable === 0}
+          className="px-2 py-1 rounded bg-white/10 disabled:opacity-30"
+          style={{ color: '#ffe27a' }}
+          title="힌트: 다음 1수"
+        >
+          ♪ {hintsAvailable}
+        </button>
+        <button onClick={onToggleMute} className="px-2 py-1 rounded bg-white/10">
+          {muted ? '🔇' : '🔊'}
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,17 +1,18 @@
 import { LevelDef } from './types';
 
 export const LEVELS: LevelDef[] = [
-  // 1번째 여름 — 튜토리얼(되감기 없음, 구출 없음, 힌트 없음)
+  // 1번째 여름 — 튜토리얼(되감기 없음, 흰 마커 수집 + 음표/힌트 연습 후 출구)
   {
-    id: 0, summer: 1, label: '1번째 여름', member: null, rewindEnabled: false, hintCap: 0,
+    id: 0, summer: 1, label: '1번째 여름', member: null, rewindEnabled: false, hintCap: 1,
     rows: [
       '#########',
-      '#P......#',
+      '#P..M...#',
       '#.#####.#',
       '#......E#',
       '#########',
     ],
     hazards: [],
+    shards: [{ x: 1, y: 3 }], // 고정 음표(힌트 연습용)
   },
   // 2번째 여름 — 은호
   {

@@ -23,6 +23,7 @@ export interface LevelDef {
   rows: string[];      // 맵 (아래 grid.ts 규칙)
   hintCap: number;     // 모을 수 있는 최대 샤드 = BFS 해답 액션 수 (튜토리얼=0)
   hazards: Hazard[];   // 초기 해저드
+  shards?: Vec[];      // 고정 배치 음표(주로 튜토리얼). 없으면 hintCap 기준 랜덤 스폰
 }
 
 export interface GameState {

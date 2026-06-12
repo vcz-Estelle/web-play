@@ -13,9 +13,11 @@ export function initState(level: LevelDef, opts: InitOpts = {}): GameState {
   const p = parseGrid(level.rows);
   const collected = Math.min(opts.banked ?? 0, level.hintCap);
   const remaining = level.hintCap - collected;
-  const scatterCount = remaining > 0 ? Math.min(randInt(1, 3, opts.rng), remaining) : 0;
   const occupied: Vec[] = [p.player, p.exit, ...(p.member ? [p.member] : []), ...level.hazards.map((h) => h.pos)];
-  const shards = scatterShards(p.grid, occupied, scatterCount, opts.rng);
+  // 고정 음표(level.shards)가 있으면 그대로, 없으면 hintCap 잔여 한도 내 랜덤 스폰
+  const shards = level.shards
+    ? level.shards.map((v) => ({ ...v }))
+    : scatterShards(p.grid, occupied, remaining > 0 ? Math.min(randInt(1, 3, opts.rng), remaining) : 0, opts.rng);
   return {
     levelId: level.id,
     grid: p.grid,

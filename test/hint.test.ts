@@ -20,10 +20,10 @@ function followHints(start: GameState): number | null {
 
 describe('solveNextAction', () => {
   it('returns null when already won', () => {
-    // 튜토리얼: 출구 한 칸 앞에서 대시로 즉시 클리어시켜 won 상태 확보
+    // 튜토리얼: 오른쪽 대시로 마커(M) 수집 후 아래 대시로 출구 도달 → won
     let s = initState(LEVELS[0]);
-    s = applyAction(s, { type: 'dash', dir: 'down' });
-    s = applyAction(s, { type: 'dash', dir: 'right' });
+    s = applyAction(s, { type: 'dash', dir: 'right' }); // M 수집
+    s = applyAction(s, { type: 'dash', dir: 'down' });  // 출구 도달
     expect(s.status).toBe('won');
     expect(solveNextAction(s)).toBeNull();
   });

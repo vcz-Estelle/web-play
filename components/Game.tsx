@@ -16,6 +16,16 @@ const MIN_CELL = 24;
 const FADE_OUT_MS = 4000;
 const FADE_IN_MS = 1500;
 
+// 튜토리얼 진행형 안내(이동→질주→마커→음표→힌트→출구)
+const TUT_MSGS = [
+  '방향키 / WASD 로 한 칸씩 움직여봐.',
+  '좋아! 이제 Shift + 방향 으로 벽까지 질주해봐.',
+  '하얀 원 마커를 먹어봐.',
+  '음표(♪)도 먹어봐. 힌트를 쓸 수 있게 돼.',
+  'H 키나 ♪ 버튼으로 힌트! 노란색은 1칸 이동, 주황색은 질주 이동이야.',
+  '이제 빛나는 구멍으로 들어가면 다음 스테이지로 갈 수 있어.',
+];
+
 // 화면 너비에 맞춰 셀 크기 산출(24~44px)
 function computeCell(cols: number): number {
   const maxW = Math.min(window.innerWidth - 32, 640);
@@ -29,6 +39,7 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
   const stateRef = useRef<GameState>(initState(LEVELS[0]));
   const [, forceRender] = useState(0);
   const [rescued, setRescued] = useState<MemberId[]>([]);
+  const [rewindCounts, setRewindCounts] = useState<Record<number, number>>({}); // 레벨별 이번 판 되감기 횟수(메모리)
   const [muted, setMutedState] = useState(false);
   const bankRef = useRef<{ banked: number; hintsUsed: number }>({ banked: 0, hintsUsed: 0 });
   const [hintAction, setHintAction] = useState<{ dir: Dir; type: 'move' | 'dash' } | null>(null);
@@ -36,6 +47,8 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
   const [hintNudge, setHintNudge] = useState(0);
   const [fading, setFading] = useState(false);
   const [cell, setCell] = useState(() => computeCell(LEVELS[0].rows[0].length));
+  const [tutStep, setTutStep] = useState(0); // 0:이동 1:질주 2:목표 (앞으로만 진행)
+  const [tutSkipped, setTutSkipped] = useState(false);
 
   const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext('2d');
@@ -84,7 +97,8 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     // 죽음 → 페이드 아웃 → 리셋 → 페이드 인 (fading 토글이 리렌더를 보장해 캔버스 재드로 누락 방지)
     setFading(true);
     if (LEVELS[levelIdx].rewindEnabled) {
-      prog.addDeath(LEVELS[levelIdx].id, s.player);
+      const id = LEVELS[levelIdx].id;
+      setRewindCounts((r) => ({ ...r, [id]: (r[id] ?? 0) + 1 }));
       bankRef.current = { banked: s.collected, hintsUsed: s.hintsUsed };
       playAlarm();
       setTimeout(() => { loadLevel(levelIdx); setFading(false); }, FADE_OUT_MS);
@@ -92,7 +106,7 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
       // 튜토리얼: 알람/기억 없이 페이드 후 리셋
       setTimeout(() => { loadLevel(levelIdx); setFading(false); }, FADE_OUT_MS);
     }
-  }, [levelIdx, loadLevel, prog]);
+  }, [levelIdx, loadLevel]);
 
   const triggerHint = useCallback(() => {
     const s = stateRef.current;
@@ -106,7 +120,8 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     setHintAction({ dir: solved.dir, type: solved.type });
     setHintsAvailable(next.collected - next.hintsUsed);
     forceRender((n) => n + 1);
-  }, []);
+    if (LEVELS[levelIdx].member === null) setTutStep((st) => Math.max(st, 5)); // 튜토리얼: 힌트 사용 안내 단계
+  }, [levelIdx]);
 
   const doAction = useCallback((action: ReturnType<typeof keyToAction>) => {
     if (!action) return;
@@ -118,9 +133,16 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     setHintAction(null);
     setHintsAvailable(next.collected - next.hintsUsed);
     forceRender((n) => n + 1);
+    // 튜토리얼 진행: 이동→1 질주→2 마커수집→3 음표수집→4 (힌트사용→5는 triggerHint에서)
+    const moved = next.player.x !== s.player.x || next.player.y !== s.player.y;
+    if (LEVELS[levelIdx].member === null) {
+      if (next.collected > s.collected) setTutStep((st) => Math.max(st, 4));
+      else if (next.rescued && !s.rescued) setTutStep((st) => Math.max(st, 3));
+      else if (moved) setTutStep((st) => Math.max(st, action.type === 'dash' ? 2 : 1));
+    }
     if (next.status === 'won') handleWin();
     else if (next.status === 'dead') handleDeath();
-  }, [handleWin, handleDeath, triggerHint]);
+  }, [levelIdx, handleWin, handleDeath, triggerHint]);
 
   // 키보드
   useEffect(() => {
@@ -153,15 +175,27 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
   return (
     <div className="flex flex-col items-center gap-3">
       <HUD
-        summer={LEVELS[levelIdx].summer}
         rescued={rescued}
-        rewinds={prog.rewinds(LEVELS[levelIdx].id)}
+        rewinds={rewindCounts[LEVELS[levelIdx].id] ?? 0}
         muted={muted}
         onToggleMute={() => { const m = !muted; setMutedState(m); setMuted(m); }}
         hintsAvailable={hintsAvailable}
         onHint={triggerHint}
         hintNudge={hintNudge}
       />
+      {/* 튜토리얼(멤버 없음) 진행형 온보딩 말풍선 */}
+      {LEVELS[levelIdx].member === null && !tutSkipped && (
+        <div className="relative max-w-md text-center text-sm">
+          <div key={tutStep} className="rounded-2xl px-4 py-3 bg-white/95 text-[#16142a] shadow-lg leading-relaxed animate-[fadeIn_0.4s_ease]">
+            <p>{TUT_MSGS[tutStep]}</p>
+            <button onClick={() => setTutSkipped(true)} className="mt-2 text-xs text-[#16142a]/50 underline">
+              튜토리얼 스킵
+            </button>
+          </div>
+          {/* 말풍선 꼬리(아래쪽 보드를 가리킴) */}
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent" style={{ borderTopColor: 'rgba(255,255,255,0.95)' }} />
+        </div>
+      )}
       <canvas
         ref={canvasRef}
         width={cols * cell}
