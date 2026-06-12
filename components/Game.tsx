@@ -156,7 +156,6 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
         summer={LEVELS[levelIdx].summer}
         rescued={rescued}
         rewinds={prog.rewinds(LEVELS[levelIdx].id)}
-        best={prog.getBest(LEVELS[levelIdx].id)}
         muted={muted}
         onToggleMute={() => { const m = !muted; setMutedState(m); setMuted(m); }}
         hintsAvailable={hintsAvailable}

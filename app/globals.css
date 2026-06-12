@@ -32,3 +32,34 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* 엔딩 꽃잎: 바깥(.petal)은 낙하+페이드, 안쪽(.petal > i)은 좌우 흔들림+회전 */
+@keyframes petal-fall {
+  0%   { transform: translateY(-12vh); opacity: 0; }
+  12%  { opacity: 0.95; }
+  88%  { opacity: 0.95; }
+  100% { transform: translateY(108vh); opacity: 0; }
+}
+@keyframes petal-sway {
+  from { transform: translateX(-16px) rotate(-28deg); }
+  to   { transform: translateX(16px) rotate(28deg); }
+}
+.petal {
+  position: absolute;
+  top: 0;
+  left: var(--x, 50%);
+  width: var(--s, 12px);
+  height: calc(var(--s, 12px) * 0.7);
+  will-change: transform, opacity;
+  animation: petal-fall var(--fd, 8s) linear var(--dl, 0s) infinite;
+}
+.petal > i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #fff6c0, #ffd84a);
+  border-radius: 100% 0 100% 0;
+  box-shadow: 0 0 4px rgba(255, 216, 74, 0.6);
+  will-change: transform;
+  animation: petal-sway var(--sd, 2.4s) ease-in-out infinite alternate;
+}

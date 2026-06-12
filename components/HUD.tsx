@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react';
 import { MEMBERS, RESCUE_ORDER } from '@/game/members';
 import { MemberId } from '@/game/types';
 
-export default function HUD({ summer, rescued, rewinds, best, muted, onToggleMute, hintsAvailable, onHint, hintNudge }: {
-  summer: number; rescued: MemberId[]; rewinds: number; best: number | null;
+export default function HUD({ summer, rescued, rewinds, muted, onToggleMute, hintsAvailable, onHint, hintNudge }: {
+  summer: number; rescued: MemberId[]; rewinds: number;
   muted: boolean; onToggleMute: () => void;
   hintsAvailable: number; onHint: () => void; hintNudge: number;
 }) {
@@ -29,12 +29,18 @@ export default function HUD({ summer, rescued, rewinds, best, muted, onToggleMut
     <div className="w-full flex items-center justify-between gap-3 text-sm text-white/80">
       <span className="font-bold">{summer}번째 여름</span>
       <div className="flex gap-1.5">
-        {RESCUE_ORDER.map((id) => (
-          <span key={id} style={{ color: MEMBERS[id].color, opacity: rescued.includes(id) ? 1 : 0.22 }}
-            className="text-lg" title={MEMBERS[id].name}>●</span>
-        ))}
+        {RESCUE_ORDER.map((id) => {
+          const done = rescued.includes(id);
+          // 구출 전 = 멤버색 점(흐림), 구출 후 = 악기 이모지로 클리어 표시
+          return done ? (
+            <span key={id} className="text-lg" title={MEMBERS[id].name}>{MEMBERS[id].instrument}</span>
+          ) : (
+            <span key={id} style={{ color: MEMBERS[id].color, opacity: 0.22 }}
+              className="text-lg" title={MEMBERS[id].name}>●</span>
+          );
+        })}
       </div>
-      <span className="text-white/60">🔁 {rewinds} · ⏱ {best ?? '—'}</span>
+      <span className="text-white/60">🔁 {rewinds}</span>
       <button
         ref={hintBtnRef}
         onClick={onHint}

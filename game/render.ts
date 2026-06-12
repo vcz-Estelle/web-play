@@ -1,16 +1,8 @@
-import { Dir, GameState, MemberId } from './types';
+import { Dir, GameState } from './types';
+import { MEMBERS } from './members';
 
 // 힌트 색상: 한 칸 이동=노랑, 대쉬 이동=주황 (HUD 하단 안내 문구와 공유)
 export const HINT_COLORS = { move: '#ffe27a', dash: '#ff9f43' } as const;
-
-// 멤버 마커 이모티콘: 테두리(멤버 고유색) + 이모티콘으로 표시
-const MEMBER_EMOJI: Partial<Record<MemberId, string>> = {
-  eunho: '🥁',
-  yejun: '🎤',
-  hamin: '🎸',
-  noa: '🎹',
-  bambi: '🎸',
-};
 
 export interface RenderOpts {
   cell: number;
@@ -73,7 +65,7 @@ export function render(ctx: CanvasRenderingContext2D, s: GameState, opts: Render
   if (s.member && !s.rescued && opts.memberColor) {
     const mx = s.member.x * cell + cell / 2;
     const my = s.member.y * cell + cell / 2;
-    const emoji = s.memberId ? MEMBER_EMOJI[s.memberId] : undefined;
+    const emoji = s.memberId ? MEMBERS[s.memberId].animal : undefined;
     if (emoji) {
       // 멤버 색 테두리 + 이모티콘
       ctx.save();
