@@ -28,6 +28,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <div className="rotate-hint">
+          <span style={{ fontSize: "2.5rem" }}>📱↻</span>
+          세로로 돌려주세요
+        </div>
         {children}
       </body>
     </html>
