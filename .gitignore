@@ -4,5 +4,8 @@ node_modules/
 .vercel/
 .env*.local
 
+# typescript 빌드 캐시
+*.tsbuildinfo
+
 .claude/*
 docs/*
