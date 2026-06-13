@@ -155,24 +155,28 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     return () => window.removeEventListener('keydown', onKey);
   }, [doAction]);
 
-  // 터치 스와이프
+  // 터치 스와이프 — 화면 전체(window)에서 동작: 상자 바깥에서 스와이프해도 방향 입력이 됨
   useEffect(() => {
-    const el = canvasRef.current; if (!el) return;
-    let sx = 0, sy = 0;
-    const start = (e: TouchEvent) => { unlockAudio(); const t = e.touches[0]; sx = t.clientX; sy = t.clientY; };
-    // 캔버스 위 스와이프가 페이지 스크롤로 새지 않도록 차단(passive:false 필수)
-    const move = (e: TouchEvent) => { e.preventDefault(); };
+    let sx = 0, sy = 0, tracking = false;
+    const start = (e: TouchEvent) => {
+      unlockAudio();
+      const t = e.touches[0]; sx = t.clientX; sy = t.clientY; tracking = true;
+    };
+    // 스와이프 중 페이지 스크롤 차단(passive:false 필수). 탭(이동 없음)은 막지 않아 버튼 클릭 정상 동작
+    const move = (e: TouchEvent) => { if (tracking) e.preventDefault(); };
     const end = (e: TouchEvent) => {
+      if (!tracking) return;
+      tracking = false;
       const t = e.changedTouches[0];
       doAction(swipeToAction(t.clientX - sx, t.clientY - sy, cell));
     };
-    el.addEventListener('touchstart', start, { passive: true });
-    el.addEventListener('touchmove', move, { passive: false });
-    el.addEventListener('touchend', end, { passive: true });
+    window.addEventListener('touchstart', start, { passive: true });
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', end, { passive: true });
     return () => {
-      el.removeEventListener('touchstart', start);
-      el.removeEventListener('touchmove', move);
-      el.removeEventListener('touchend', end);
+      window.removeEventListener('touchstart', start);
+      window.removeEventListener('touchmove', move);
+      window.removeEventListener('touchend', end);
     };
   }, [doAction, cell]);
 
