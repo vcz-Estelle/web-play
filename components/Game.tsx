@@ -5,7 +5,6 @@ import { initState, applyAction } from '@/game/state';
 import { render, HINT_COLORS } from '@/game/render';
 import { keyToAction, swipeToAction } from '@/game/input';
 import { solveNextAction } from '@/game/hint';
-import { createProgress } from '@/game/progress';
 import { MEMBERS } from '@/game/members';
 import { unlockAudio, playAlarm, playRescue, setMuted } from '@/game/audio';
 import { GameState, MemberId, Dir } from '@/game/types';
@@ -34,7 +33,6 @@ function computeCell(cols: number): number {
 
 export default function Game({ onAllCleared }: { onAllCleared: (members: MemberId[]) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [prog] = useState(() => createProgress(window.localStorage));
   const [levelIdx, setLevelIdx] = useState(0);
   const stateRef = useRef<GameState>(initState(LEVELS[0]));
   const [, forceRender] = useState(0);
@@ -82,15 +80,13 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
 
   const handleWin = useCallback(() => {
     const s = stateRef.current;
-    prog.markCleared(LEVELS[levelIdx].id);
-    prog.recordBest(LEVELS[levelIdx].id, s.tick);
     const newRescued = s.memberId ? [...rescued, s.memberId] : rescued;
     if (s.memberId) { playRescue(MEMBERS[s.memberId].noteHz); setRescued(newRescued); }
     const next = levelIdx + 1;
     if (next >= LEVELS.length) { onAllCleared(newRescued); return; }
     bankRef.current = { banked: 0, hintsUsed: 0 };
     setTimeout(() => loadLevel(next), 700);
-  }, [levelIdx, rescued, loadLevel, onAllCleared, prog]);
+  }, [levelIdx, rescued, loadLevel, onAllCleared]);
 
   const handleDeath = useCallback(() => {
     const s = stateRef.current;
