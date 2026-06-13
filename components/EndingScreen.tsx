@@ -34,7 +34,7 @@ export default function EndingScreen({ onRestart }: { onRestart: () => void }) {
   return (
     <div
       className='relative flex flex-col items-center gap-5 text-center'
-      style={{ color: textColor, transition: colorTrans, zIndex: 1 }}
+      style={{ color: textColor, opacity: lit ? 1 : 0, transition: `opacity 700ms ease, ${colorTrans}`, zIndex: 1 }}
     >
       {/* 바닥쪽으로 흩날리는 노란 꽃잎 (화면 전체 오버레이) */}
       <div aria-hidden className='pointer-events-none fixed inset-0 overflow-hidden' style={{ zIndex: 0 }}>

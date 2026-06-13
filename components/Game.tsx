@@ -14,6 +14,7 @@ const MAX_CELL = 44;
 const MIN_CELL = 24;
 const FADE_OUT_MS = 4000;
 const FADE_IN_MS = 1500;
+const ENDING_DELAY_MS = 700; // 마지막 구출음 → (검은 페이드아웃) → 엔딩 화면 사이 간격
 
 // 튜토리얼 진행형 안내(이동→질주→마커→음표→힌트→출구)
 const TUT_MSGS = [
@@ -47,6 +48,7 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
   const [cell, setCell] = useState(() => computeCell(LEVELS[0].rows[0].length));
   const [tutStep, setTutStep] = useState(0); // 0:이동 1:질주 2:목표 (앞으로만 진행)
   const [tutSkipped, setTutSkipped] = useState(false);
+  const [toBlack, setToBlack] = useState(false); // 마지막 클리어 → 엔딩 전 검은 페이드아웃
 
   const draw = useCallback(() => {
     const ctx = canvasRef.current?.getContext('2d');
@@ -83,7 +85,12 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     const newRescued = s.memberId ? [...rescued, s.memberId] : rescued;
     if (s.memberId) { playRescue(MEMBERS[s.memberId].noteHz); setRescued(newRescued); }
     const next = levelIdx + 1;
-    if (next >= LEVELS.length) { onAllCleared(newRescued); return; }
+    // 마지막 스테이지: 구출음 → 검은 페이드아웃 → 엔딩 화면(음 겹침 방지 + 부드러운 전환)
+    if (next >= LEVELS.length) {
+      setToBlack(true);
+      setTimeout(() => onAllCleared(newRescued), ENDING_DELAY_MS);
+      return;
+    }
     bankRef.current = { banked: 0, hintsUsed: 0 };
     setTimeout(() => loadLevel(next), 700);
   }, [levelIdx, rescued, loadLevel, onAllCleared]);
@@ -181,6 +188,11 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
 
   return (
     <div className="flex flex-col items-center gap-3">
+      {/* 마지막 클리어 시 화면 전체를 검은색으로 페이드아웃 */}
+      <div
+        className="fixed inset-0 bg-black pointer-events-none"
+        style={{ opacity: toBlack ? 1 : 0, transition: `opacity ${ENDING_DELAY_MS}ms ease`, zIndex: 50 }}
+      />
       <HUD
         rescued={rescued}
         rewinds={rewindCounts[LEVELS[levelIdx].id] ?? 0}
