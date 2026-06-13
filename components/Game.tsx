@@ -160,13 +160,20 @@ export default function Game({ onAllCleared }: { onAllCleared: (members: MemberI
     const el = canvasRef.current; if (!el) return;
     let sx = 0, sy = 0;
     const start = (e: TouchEvent) => { unlockAudio(); const t = e.touches[0]; sx = t.clientX; sy = t.clientY; };
+    // 캔버스 위 스와이프가 페이지 스크롤로 새지 않도록 차단(passive:false 필수)
+    const move = (e: TouchEvent) => { e.preventDefault(); };
     const end = (e: TouchEvent) => {
       const t = e.changedTouches[0];
       doAction(swipeToAction(t.clientX - sx, t.clientY - sy, cell));
     };
     el.addEventListener('touchstart', start, { passive: true });
+    el.addEventListener('touchmove', move, { passive: false });
     el.addEventListener('touchend', end, { passive: true });
-    return () => { el.removeEventListener('touchstart', start); el.removeEventListener('touchend', end); };
+    return () => {
+      el.removeEventListener('touchstart', start);
+      el.removeEventListener('touchmove', move);
+      el.removeEventListener('touchend', end);
+    };
   }, [doAction, cell]);
 
   const cols = LEVELS[levelIdx].rows[0].length;
